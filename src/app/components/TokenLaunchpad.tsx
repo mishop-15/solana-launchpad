@@ -2,17 +2,18 @@
 
 import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { MINT_SIZE, TOKEN_PROGRAM_ID, createInitializeMint2Instruction, createMintToInstruction, createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, getMinimumBalanceForRentExemptMint } from "@solana/spl-token";
+import { MINT_SIZE, TOKEN_PROGRAM_ID, createInitializeMint2Instruction, createMintToInstruction, createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, getMinimumBalanceForRentExemptMint, createSetAuthorityInstruction, AuthorityType } from "@solana/spl-token";
 import { useState } from "react";
 
 export function TokenLaunchpad(){
     const {connection} = useConnection();
     const {publicKey: walletPublicKey, sendTransaction} = useWallet();
 
-    // const [name, setName] = useState("");
-    // const [symbol, setSymbol] = useState("");
-    // const [imageUrl, setImageUrl] = useState("");
+    const [name, setName] = useState("");
+    const [symbol, setSymbol] = useState("");
+    const [imageUrl, setImageUrl] = useState("");
     const [supply, setSupply] = useState("");
+    const [revokeMint, setRevokeMint] = useState(false);
 
     const createToken = async()=>{
         if(!walletPublicKey){
@@ -51,6 +52,17 @@ export function TokenLaunchpad(){
                     BigInt(parseFloat(supply) * 1000000000)
                 )
             ) ;
+
+            if(revokeMint){
+                transaction.add(
+                    createSetAuthorityInstruction(
+                        mintKeypair.publicKey,
+                        walletPublicKey,
+                        AuthorityType.MintTokens,
+                        null
+                    )
+                );
+            }
             const signature = await sendTransaction(transaction, connection, { signers: [mintKeypair] });
         await connection.confirmTransaction(signature, "confirmed");
         }
@@ -60,52 +72,35 @@ export function TokenLaunchpad(){
         }
     }
     return (
-        <div className="w-full max-w-md bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-xl">
-            <h2 className="text-2xl font-semibold mb-6 text-white text-center">Solana Token Creator</h2>
-            
-            <div className="flex flex-col gap-4">
-                <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Token Name</label>
-                    <input 
-                        className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600 focus:border-blue-500 focus:outline-none" 
-                        placeholder="e.g. Venture Capital Token" 
-                        onChange={(e) => setName(e.target.value)} 
-                    />
-                </div>
+        <div className="h-screen flex flex-col justify-center items-center bg-slate-900">
+            <div className="w-full max-w-md bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl">
+                <h2 className="text-3xl font-bold mb-8 text-white text-center tracking-wide">
+                    Solana Token Creator
+                </h2>
+                <div className="flex flex-col gap-6">
+                    <input className="w-full bg-slate-900 text-white p-4 rounded-lg border border-slate-600 outline-none" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                    <input className="w-full bg-slate-900 text-white p-4 rounded-lg border border-slate-600 outline-none" placeholder="Symbol" value={symbol} onChange={(e) => setSymbol(e.target.value)} />
+                    <input className="w-full bg-slate-900 text-white p-4 rounded-lg border border-slate-600 outline-none" placeholder="Image URL" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+                    <input className="w-full bg-slate-900 text-white p-4 rounded-lg border border-slate-600 outline-none" placeholder="Initial Supply" value={supply} onChange={(e) => setSupply(e.target.value)} />
+                    
+                    {/* New Checkbox UI */}
+                    <div className="flex items-center gap-3">
+                        <input 
+                            type="checkbox" 
+                            id="revoke"
+                            checked={revokeMint}
+                            onChange={(e) => setRevokeMint(e.target.checked)}
+                            className="w-5 h-5 accent-blue-600"
+                        />
+                        <label htmlFor="revoke" className="text-gray-300 text-sm font-medium">
+                            Revoke Mint Authority (Fixed Supply)
+                        </label>
+                    </div>
 
-                <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Symbol</label>
-                    <input 
-                        className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600 focus:border-blue-500 focus:outline-none" 
-                        placeholder="e.g. VCT" 
-                        onChange={(e) => setSymbol(e.target.value)} 
-                    />
+                    <button onClick={createToken} className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-all">
+                        Create Token Asset
+                    </button>
                 </div>
-
-                <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Image URL</label>
-                    <input 
-                        className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600 focus:border-blue-500 focus:outline-none" 
-                        placeholder="https://..." 
-                        onChange={(e) => setImageUrl(e.target.value)} 
-                    />
-                </div>
-
-                <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Initial Supply</label>
-                    <input 
-                        className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600 focus:border-blue-500 focus:outline-none" 
-                        placeholder="e.g. 1,000,000" 
-                        onChange={(e) => setSupply(e.target.value)} 
-                    />
-                </div>
-
-                <button 
-                    onClick={createToken} 
-                    className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded transition-all transform hover:scale-[1.02]"
-                >
-                    Create Token Asset
-                </button>
             </div>
         </div>
     );
