@@ -7,6 +7,7 @@ import { SendTokens } from "./components/SendTokens";
 import { TokenLaunchpad } from "./components/TokenLaunchpad";
 import { Airdrop } from "./components/Airdrop";
 import { Token2022Creator } from "./components/Token2022Creator";
+import { TaxHarvester } from "./components/TaxHarvester";
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
       <Airdrop />
 
       <Token2022Creator />
+      <TaxHarvester/>
       
     </main>
   );
