@@ -5,6 +5,7 @@ import { RequestAirdrop } from "./components/RequestAirdrop";
 import { ShowBalance } from "./components/ShowBalance";
 import { SendTokens } from "./components/SendTokens";
 import { TokenLaunchpad } from "./components/TokenLaunchpad";
+import { Airdrop } from "./components/Airdrop";
 
 export default function Home() {
   return (
@@ -17,6 +18,8 @@ export default function Home() {
       <SendTokens />
 
       <TokenLaunchpad />
+
+      <Airdrop />
       
     </main>
   );
