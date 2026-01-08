@@ -6,6 +6,7 @@ import { ShowBalance } from "./components/ShowBalance";
 import { SendTokens } from "./components/SendTokens";
 import { TokenLaunchpad } from "./components/TokenLaunchpad";
 import { Airdrop } from "./components/Airdrop";
+import { Token2022Creator } from "./components/Token2022Creator";
 
 export default function Home() {
   return (
@@ -20,6 +21,8 @@ export default function Home() {
       <TokenLaunchpad />
 
       <Airdrop />
+
+      <Token2022Creator />
       
     </main>
   );
