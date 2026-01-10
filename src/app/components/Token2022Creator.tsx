@@ -1,6 +1,6 @@
 "use client"
 import { useConnection, useWallet  } from "@solana/wallet-adapter-react"
-import { Keypair, SystemProgram, Transaction, PublicKey } from "@solana/web3.js"
+import { Keypair, SystemProgram, Transaction, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js"
 import { TOKEN_2022_PROGRAM_ID, 
     getMintLen, 
     createInitializeMetadataPointerInstruction, 
@@ -10,6 +10,10 @@ import { TOKEN_2022_PROGRAM_ID,
     getAssociatedTokenAddressSync, 
     createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { useState } from "react";
+
+const TREASURY_WALLET = new PublicKey("Fbr3vtcBP8DVim4fGyAs8uLug8V8iErVQQQxqkghCQ52");
+const SERVICE_FEE = 0.1
+
 
 export function Token2022Creator(){
     const {connection} = useConnection();
@@ -28,7 +32,11 @@ export function Token2022Creator(){
         try{
             const mintKeypair= Keypair.generate();
             const decimals = 9;
-
+            const paymentInstruction = SystemProgram.transfer({             
+                fromPubkey: wallet.publicKey,
+                toPubkey: TREASURY_WALLET,
+                lamports: SERVICE_FEE * LAMPORTS_PER_SOL 
+            })
             const extensions = [
                 ExtensionType.TransferFeeConfig,
                 ExtensionType.MetadataPointer
@@ -44,6 +52,7 @@ export function Token2022Creator(){
             );
 
             const transaction = new Transaction().add(
+                paymentInstruction,
                 SystemProgram.createAccount({
                     fromPubkey: wallet.publicKey,
                     newAccountPubkey: mintKeypair.publicKey,
